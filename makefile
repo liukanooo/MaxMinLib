@@ -5,9 +5,9 @@ CURRENT_DIR=.
 COQC=$(COQBIN)coqc$(EXESUF)
 COQDEP=$(COQBIN)coqdep$(EXESUF)
 
-COQ_FLAG = -Q $(CURRENT_DIR) ExtremumLib \
+COQ_FLAG = -Q $(CURRENT_DIR) MaxMinLib \
            -R ../sets SetsClass 
-DEP_FLAG = -Q $(CURRENT_DIR) ExtremumLib \
+DEP_FLAG = -Q $(CURRENT_DIR) MaxMinLib \
            -R ../sets SetsClass \
 
 EXTREMUM_FILES = MaxMin.v
