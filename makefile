@@ -10,7 +10,7 @@ COQ_FLAG = -Q $(CURRENT_DIR) MaxMinLib \
 DEP_FLAG = -Q $(CURRENT_DIR) MaxMinLib \
            -R ../sets SetsClass \
 
-EXTREMUM_FILES = MaxMin.v
+EXTREMUM_FILES = MaxMin.v Interface.v
 
 FILES = \
  $(EXTREMUM_FILES) \
