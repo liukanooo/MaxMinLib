@@ -81,33 +81,7 @@ Lemma min_l :
     le y x -> le_min x y = y. 
 Proof. intros. unfold le_min. destruct (le_total x y); [apply le_antisym; auto| auto]. Qed.
 
-
-Definition ge (x y : T) : Prop := le y x.   
-
-
-Lemma ge_refl : forall x, ge x x. 
-Proof. intros. unfold ge. apply le_refl. Qed.
-
-Lemma ge_trans : forall x y z, ge x y -> ge y z -> ge x z.
-Proof. intros. unfold ge. eapply le_trans; eauto. Qed.
-
-Lemma ge_antisym : forall x y, ge x y -> ge y x -> x = y.
-Proof. intros. unfold ge. apply le_antisym; auto. Qed. 
-
-Lemma ge_total : forall x y, {ge x y} + {ge y x}.
-Proof. intros. unfold ge. destruct (le_total y x); auto. Qed.
-
-#[export] Instance ge_total_order: TotalOrder ge := {
-  le_refl := ge_refl;
-  le_trans := ge_trans;
-  le_antisym := ge_antisym;
-  le_total := ge_total
-}.
-
 Notation "x ≤ y" := (le x y) (at level 70, no associativity).
-Notation "x ≥ y" := (ge x y) (at level 70, no associativity).
-
-
 
 Definition max_object_of_subset
              {A: Type}
@@ -498,10 +472,10 @@ Theorem max_object_union {A: Type}:
 Proof.
   intros.
   pose proof le_total (f a) (f b).
-  destruct H1; [left | right].
-  + pose proof max_object_union1 a b _ _ _ H H0 ltac:(auto).
-    tauto.
+  destruct H1; [right | left].
   + pose proof max_object_union2 a b _ _ _ H H0 ltac:(auto).
+    tauto.
+  + pose proof max_object_union1 a b _ _ _ H H0 ltac:(auto).
     tauto.
 Qed.
 
@@ -516,13 +490,13 @@ Proof.
   subst n m.
   pose proof le_total (f a) (f b).
   destruct H1.
-  + pose proof max_object_union1 a b _ _ _ H H0 ltac:(auto).
-    rewrite (max_l _ _ g).
-    exists a.
-    tauto.
   + pose proof max_object_union2 a b _ _ _ H H0 ltac:(auto).
-    rewrite (max_r _ _ g).
+    rewrite (max_r _ _ l).
     exists b.
+    tauto.
+  + pose proof max_object_union1 a b _ _ _ H H0 ltac:(auto).
+    rewrite (max_l _ _ l).
+    exists a.
     tauto.
 Qed.
 
@@ -554,7 +528,7 @@ Proof.
     left.
     split; [tauto | auto]. 
     destruct (le_total n m); 
-    [rewrite (max_l _ _ g) | rewrite (max_r _ _ g)]; auto.
+    [rewrite (max_r _ _ l) | rewrite (max_l _ _ l)]; auto.
   + rewrite (max_l n m ltac:(destruct H0; subst; auto)).
     destruct H0 as [? _].
     destruct H as [a [? ?] ].
@@ -643,16 +617,16 @@ Proof.
   intros.
   unfold max_value_of_subset_with_default.
   destruct (le_total (f a) default).
-  + left.
-    split; [| auto].
-    rewrite max_l by auto.
-    apply max_1'. 
-    rewrite max_l; auto.
   + right.
     split; [| auto].
     sets_unfold.
     intros; subst; auto. 
     rewrite max_r; auto.
+  + left.
+    split; [| auto].
+    rewrite max_l by auto.
+    apply max_1'. 
+    rewrite max_l; auto.
 Qed.
 
 Theorem max_union_1_right' {A: Type}:
@@ -696,11 +670,11 @@ Proof.
   + tauto.
   + apply max_default_1.
   + destruct (le_total (f a) default). 
-    - rewrite (max_l _ _ g). 
-      reflexivity. 
-    - rewrite (max_r _ _ g). 
+    - rewrite (max_r _ _ l). 
       rewrite (max_l _ _ H0). 
       rewrite (max_l _ _ ltac:(eapply le_trans; eauto)). 
+      reflexivity. 
+    - rewrite (max_l _ _ l). 
       reflexivity. 
 Qed.
 
@@ -767,7 +741,7 @@ Definition min_object_of_subset
              (X: A -> Prop)
              (f: A -> T)
              (a: A): Prop :=
-  a ∈ X /\ forall b, b ∈ X -> f b ≥ f a.
+  a ∈ X /\ forall b, b ∈ X -> f a ≤ f b.
 
 Definition min_value_of_subset
              {A: Type}
@@ -783,7 +757,7 @@ Definition min_value_of_subset_with_default
              (default: T)
              (n: T): Prop :=
   (min_value_of_subset X f n /\ n ≤ default) \/
-  ((forall a, a ∈ X -> f a ≥ default) /\ n = default).
+  ((forall a, a ∈ X -> default ≤ f a) /\ n = default).
 
 Notation "a 'is-the-min-of' e 'in-which' x 'satisfies' P" :=
   (min_value_of_subset (fun x => P) (fun x => e) a)
@@ -801,18 +775,10 @@ Notation "a 'is-the-min-of' e 'in-which' ' pat 'satisfies' P 'with-default' defa
   (min_value_of_subset_with_default (fun xx => match xx with pat => P end) (fun xx => match xx with pat => e end) default a)
   (at level 1, pat pattern, no associativity).
 
-Notation "'the-min-of' e 'in-which' x 'satisfies' P" :=
-  (min_value_of_subset (fun x => P) (fun x => e))
-  (at level 2, no associativity).
-
-Notation "'the-min-of' e 'in-which' ' pat 'satisfies' P" :=
-  (min_value_of_subset (fun xx => match xx with pat => P end) (fun xx => match xx with pat => e end))
-  (at level 2, pat pattern, no associativity).
-
 Lemma min_object_sound {A: Type}:
   forall (f: A -> T) (P: A -> Prop) (a: A),
     min_object_of_subset P f a ->
-    (forall b: A, b ∈ P -> f b ≥ f a).
+    (forall b: A, b ∈ P -> f a ≤ f b).
 Proof. intros f P a [? ?]. tauto. Qed.
 
 Lemma min_object_legal {A: Type}:
@@ -1088,8 +1054,8 @@ Qed.
 Theorem min_object_union_left {A: Type}:
   forall a (f: A -> T) (P Q: A -> Prop) n,
     min_object_of_subset P f a ->
-    (forall b, b ∈ Q -> f b ≥ n) ->
-    n ≥ f a ->
+    (forall b, b ∈ Q -> n ≤ f b) ->
+    f a ≤ n ->
     min_object_of_subset (P ∪ Q) f a.
 Proof.
   intros.
@@ -1111,7 +1077,7 @@ Theorem min_object_union1 {A: Type}:
   forall a b (f: A -> T) (P Q: A -> Prop),
     min_object_of_subset P f a ->
     min_object_of_subset Q f b ->
-    f b ≥ f a ->
+    f a ≤ f b ->
     min_object_of_subset (P ∪ Q) f a.
 Proof.
   intros.
@@ -1122,9 +1088,9 @@ Qed.
 
 Theorem min_object_union_right {A: Type}:
   forall a (f: A -> T) (P Q: A -> Prop) n,
-    (forall b, b ∈ P -> f b ≥ n) ->
+    (forall b, b ∈ P -> n ≤ f b) ->
     min_object_of_subset Q f a ->
-    n ≥ f a ->
+    f a ≤ n ->
     min_object_of_subset (P ∪ Q) f a.
 Proof.
   intros.
@@ -1146,7 +1112,7 @@ Theorem min_object_union2 {A: Type}:
   forall a b (f: A -> T) (P Q: A -> Prop),
     min_object_of_subset P f a ->
     min_object_of_subset Q f b ->
-    f a ≥ f b ->
+    f b ≤ f a ->
     min_object_of_subset (P ∪ Q) f b.
 Proof.
   intros.
@@ -1182,15 +1148,14 @@ Proof.
   subst n m.
   pose proof le_total (f a) (f b).
   destruct H1.
-  + pose proof min_object_union2 a b _ _ _ H H0 ltac:(auto).
-    rewrite (min_l _ _ g).
-    exists b.
-    tauto.
   + pose proof min_object_union1 a b _ _ _ H H0 ltac:(auto).
-    rewrite (min_r _ _ g).
+    rewrite (min_r _ _ l).
     exists a.
     tauto.
-
+  + pose proof min_object_union2 a b _ _ _ H H0 ltac:(auto).
+    rewrite (min_l _ _ l).
+    exists b.
+    tauto.
 Qed.
 
 Theorem min_union {A: Type}:
@@ -1221,7 +1186,7 @@ Proof.
     left.
     split; [tauto | auto]. 
     destruct (le_total n m); 
-    [rewrite (min_l _ _ g) | rewrite (min_r _ _ g)]; auto.
+    [rewrite (min_r _ _ l) | rewrite (min_l _ _ l)]; auto.
   + rewrite (min_r n m ltac:(destruct H0; subst; auto)).
     destruct H0 as [? _].
     destruct H as [a [? ?] ].
@@ -1310,6 +1275,9 @@ Proof.
   intros.
   unfold min_value_of_subset_with_default.
   destruct (le_total (f a) default).
+  + left.
+    rewrite min_r; auto.
+    split; [apply min_1' | auto].
   + right.
     rewrite min_l; auto.
     split; [| auto].
@@ -1317,9 +1285,6 @@ Proof.
     intros.
     subst.
     auto.
-  + left.
-    rewrite min_r; auto.
-    split; [apply min_1' | auto].
 Qed.
 
 Theorem min_union_1_right' {A: Type}:
@@ -1361,12 +1326,12 @@ Proof.
   assert (H_eq: le_min n (f a) = le_min n (le_min (f a) default)).
   {
     destruct (le_total (f a) default).
-    - rewrite (min_l _ _ g).
+    - rewrite (min_r _ _ l).
+      reflexivity.
+    - rewrite (min_l _ _ l).
       rewrite (min_r _ _ H_le); auto.
       rewrite (min_r n (f a)); auto.
       eapply le_trans; eauto.
-    - rewrite (min_r _ _ g).
-      reflexivity.
   }
   rewrite H_eq.
   apply min_default_union'.
@@ -1515,6 +1480,22 @@ Proof.
 Qed.
 
 End TotalOrder.
+
+Notation "'the-max-of' e 'in-which' x 'satisfies' P" :=
+  (max_value_of_subset (fun x => P) (fun x => e))
+  (at level 2, no associativity).
+
+Notation "'the-max-of' e 'in-which' ' pat 'satisfies' P" :=
+  (max_value_of_subset (fun xx => match xx with pat => P end) (fun xx => match xx with pat => e end))
+  (at level 2, pat pattern, no associativity).
+
+Notation "'the-min-of' e 'in-which' x 'satisfies' P" :=
+  (min_value_of_subset (fun x => P) (fun x => e))
+  (at level 2, no associativity).
+
+Notation "'the-min-of' e 'in-which' ' pat 'satisfies' P" :=
+  (min_value_of_subset (fun xx => match xx with pat => P end) (fun xx => match xx with pat => e end))
+  (at level 2, pat pattern, no associativity).
 
 
 

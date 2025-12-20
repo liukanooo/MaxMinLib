@@ -1,14 +1,13 @@
 CURRENT_DIR=.
+SETS_DIR = ../sets
 
 -include CONFIGURE
 
 COQC=$(COQBIN)coqc$(EXESUF)
 COQDEP=$(COQBIN)coqdep$(EXESUF)
 
-COQ_FLAG = -Q $(CURRENT_DIR) MaxMinLib \
-           -R ../sets SetsClass 
-DEP_FLAG = -Q $(CURRENT_DIR) MaxMinLib \
-           -R ../sets SetsClass \
+COQ_FLAG = -Q $(CURRENT_DIR) MaxMinLib -R $(SETS_DIR) SetsClass
+DEP_FLAG = -Q $(CURRENT_DIR) MaxMinLib -R $(SETS_DIR) SetsClass
 
 EXTREMUM_FILES = MaxMin.v Interface.v
 
@@ -41,4 +40,3 @@ clean:
 .DEFAULT_GOAL := all
 
 include .depend
-
