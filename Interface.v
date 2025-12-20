@@ -1,9 +1,14 @@
 
 Require Import Lia.
+Require Import SetsClass.SetsClass.
 Require Import Coq.ZArith.ZArith.
 Require Import Coq.Arith.PeanoNat.
 Require Import MaxMinLib.MaxMin.
+Require Import Coq.Logic.Classical_Prop.
 
+Local Open Scope sets.
+
+(* MaxMin in Z *)
 
 Section Z.
 
@@ -19,6 +24,9 @@ Proof. intros. destruct (Z_le_dec x y); [left | right]; lia. Qed.
 
 End Z.
 
+
+(* MaxMin in Nat *)
+
 Section Nat.
 
 Theorem Nat_le_total: forall x y, {Nat.le x y} + {Nat.le y x}.
@@ -30,6 +38,65 @@ Proof. intros. destruct (le_ge_dec x y); [left | right]; auto. Qed.
   le_antisym := Nat.le_antisymm;
   le_total := Nat_le_total;
 }.
+
+
+(* 只有在nat(良序关系)上且谓词为最小值时，存在性引理才成立 *)
+
+Theorem min_nonempty_exists {A: Type}: 
+  forall (f: A -> nat) (P: A -> Prop),
+    (exists a, P a) -> 
+    exists b, min_value_of_subset Nat.le P f b.
+Proof.
+  intros f P [a0 Ha0].
+  remember (f a0) as n eqn:Heqn.
+  revert a0 Ha0 Heqn.
+  induction n as [n IH] using (well_founded_induction lt_wf).
+  intros a0 Ha0 Heqn.
+  destruct (classic (exists a', P a' /\ f a' < f a0)) as [Hsmaller | Hminimal].
+  - destruct Hsmaller as [a' [Ha' Hlt]].
+    assert (f a' < n) by lia.
+    eapply (IH (f a')); eauto.
+  - exists (f a0).
+    exists a0; split; auto. 
+    split; auto.
+    intros a Ha.
+    destruct (Nat.le_gt_cases (f a0) (f a)) as [Hle | Hgt].
+    * exact Hle.
+    * exfalso. apply Hminimal.
+      exists a; split; auto.
+Qed.
+
+(* 索引并集性质: 最小值的并集的最小值 = 并集的最小值 *)
+
+Theorem min_union_iff {A: Type}:
+  forall (f: A -> nat) (P Q: A -> Prop),
+    min_value_of_subset Nat.le (P ∪ Q) f == 
+    min_value_of_subset Nat.le (min_value_of_subset Nat.le P f ∪ min_value_of_subset Nat.le Q f) id.
+Proof.
+  intros; split; intros. 
+  - destruct H as [? [[[]] ?]]; exists a; split; auto; split.
+    * left; exists x; split; firstorder. 
+    * intros; destruct H2; destruct H2 as [? [[] ?]]; subst; firstorder.  
+    * right; exists x; split; firstorder. 
+    * intros; destruct H2; destruct H2 as [? [[] ?]]; subst; firstorder.  
+  - destruct H as [? []]; subst; unfold id. 
+    destruct H as [[[a []]|[b []]] Hismin]; 
+    [exists a | exists b]; split; auto.
+    + split; [left; destruct H; auto| intros ? []]. 
+      * apply H in H1; auto. 
+      * pose proof min_nonempty_exists f Q ltac:(exists b; auto) as [fb' [b' []]].
+        subst; unfold id in Hismin. 
+        pose proof Hismin (f b') ltac:(right; exists b'; split; auto). 
+        apply H2 in H1. 
+        lia.  
+    + split; [right; destruct H; auto| intros a []]. 
+      * pose proof min_nonempty_exists f P ltac:(exists a; auto) as [fa' [a' []]].
+        subst; unfold id in Hismin. 
+        pose proof Hismin (f a') ltac:(left; exists a'; split; auto). 
+        apply H2 in H1. 
+        lia. 
+      * apply H in H1; auto. 
+Qed.
 
 End Nat.
 
@@ -84,6 +151,9 @@ Qed.
 }.
 
 End Nat_op.
+
+
+
 
 Section Z_op.
 
