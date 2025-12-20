@@ -82,7 +82,7 @@ Lemma min_l :
 Proof. intros. unfold le_min. destruct (le_total x y); [apply le_antisym; auto| auto]. Qed.
 
 
-Definition ge (x y : T) : Prop := le y x.   
+(* Definition ge (x y : T) : Prop := le y x.   
 
 
 Lemma ge_refl : forall x, ge x x. 
@@ -102,10 +102,10 @@ Proof. intros. unfold ge. destruct (le_total y x); auto. Qed.
   le_trans := ge_trans;
   le_antisym := ge_antisym;
   le_total := ge_total
-}.
+}. *)
 
 Notation "x ≤ y" := (le x y) (at level 70, no associativity).
-Notation "x ≥ y" := (ge x y) (at level 70, no associativity).
+Notation "x ≥ y" := (le y x) (at level 70, no associativity).
 
 
 
@@ -498,10 +498,10 @@ Theorem max_object_union {A: Type}:
 Proof.
   intros.
   pose proof le_total (f a) (f b).
-  destruct H1; [left | right].
-  + pose proof max_object_union1 a b _ _ _ H H0 ltac:(auto).
-    tauto.
+  destruct H1; [right | left].
   + pose proof max_object_union2 a b _ _ _ H H0 ltac:(auto).
+    tauto.
+  + pose proof max_object_union1 a b _ _ _ H H0 ltac:(auto).
     tauto.
 Qed.
 
@@ -516,13 +516,13 @@ Proof.
   subst n m.
   pose proof le_total (f a) (f b).
   destruct H1.
-  + pose proof max_object_union1 a b _ _ _ H H0 ltac:(auto).
-    rewrite (max_l _ _ g).
-    exists a.
-    tauto.
   + pose proof max_object_union2 a b _ _ _ H H0 ltac:(auto).
-    rewrite (max_r _ _ g).
+    rewrite (max_r _ _ l).
     exists b.
+    tauto.
+  + pose proof max_object_union1 a b _ _ _ H H0 ltac:(auto).
+    rewrite (max_l _ _ l).
+    exists a.
     tauto.
 Qed.
 
@@ -554,7 +554,7 @@ Proof.
     left.
     split; [tauto | auto]. 
     destruct (le_total n m); 
-    [rewrite (max_l _ _ g) | rewrite (max_r _ _ g)]; auto.
+    [rewrite (max_r _ _ l) | rewrite (max_l _ _ l)]; auto.
   + rewrite (max_l n m ltac:(destruct H0; subst; auto)).
     destruct H0 as [? _].
     destruct H as [a [? ?] ].
@@ -643,16 +643,16 @@ Proof.
   intros.
   unfold max_value_of_subset_with_default.
   destruct (le_total (f a) default).
-  + left.
-    split; [| auto].
-    rewrite max_l by auto.
-    apply max_1'. 
-    rewrite max_l; auto.
   + right.
     split; [| auto].
     sets_unfold.
     intros; subst; auto. 
     rewrite max_r; auto.
+  + left.
+    split; [| auto].
+    rewrite max_l by auto.
+    apply max_1'. 
+    rewrite max_l; auto.
 Qed.
 
 Theorem max_union_1_right' {A: Type}:
@@ -696,11 +696,11 @@ Proof.
   + tauto.
   + apply max_default_1.
   + destruct (le_total (f a) default). 
-    - rewrite (max_l _ _ g). 
-      reflexivity. 
-    - rewrite (max_r _ _ g). 
+    - rewrite (max_r _ _ l). 
       rewrite (max_l _ _ H0). 
       rewrite (max_l _ _ ltac:(eapply le_trans; eauto)). 
+      reflexivity. 
+    - rewrite (max_l _ _ l). 
       reflexivity. 
 Qed.
 
@@ -1182,15 +1182,14 @@ Proof.
   subst n m.
   pose proof le_total (f a) (f b).
   destruct H1.
-  + pose proof min_object_union2 a b _ _ _ H H0 ltac:(auto).
-    rewrite (min_l _ _ g).
-    exists b.
-    tauto.
   + pose proof min_object_union1 a b _ _ _ H H0 ltac:(auto).
-    rewrite (min_r _ _ g).
+    rewrite (min_r _ _ l).
     exists a.
     tauto.
-
+  + pose proof min_object_union2 a b _ _ _ H H0 ltac:(auto).
+    rewrite (min_l _ _ l).
+    exists b.
+    tauto.
 Qed.
 
 Theorem min_union {A: Type}:
@@ -1213,7 +1212,7 @@ Theorem min_default_union' {A: Type}:
   forall n m (f: A -> T) (P Q: A -> Prop) default,
     min_value_of_subset_with_default P f default n ->
     min_value_of_subset_with_default Q f default m ->
-    min_value_of_subset_with_default (P ∪ Q) f default (le_min n m).
+    min_value_of_subset_with_default (P ∪ Q) f default (le_min n m). 
 Proof.
   intros.
   destruct H as [ [? ?] | ? ], H0 as [ [? ?] | ?].
@@ -1221,7 +1220,7 @@ Proof.
     left.
     split; [tauto | auto]. 
     destruct (le_total n m); 
-    [rewrite (min_l _ _ g) | rewrite (min_r _ _ g)]; auto.
+    [rewrite (min_r _ _ l) | rewrite (min_l _ _ l)]; auto.
   + rewrite (min_r n m ltac:(destruct H0; subst; auto)).
     destruct H0 as [? _].
     destruct H as [a [? ?] ].
@@ -1310,6 +1309,9 @@ Proof.
   intros.
   unfold min_value_of_subset_with_default.
   destruct (le_total (f a) default).
+  + left.
+    rewrite min_r; auto.
+    split; [apply min_1' | auto].
   + right.
     rewrite min_l; auto.
     split; [| auto].
@@ -1317,9 +1319,6 @@ Proof.
     intros.
     subst.
     auto.
-  + left.
-    rewrite min_r; auto.
-    split; [apply min_1' | auto].
 Qed.
 
 Theorem min_union_1_right' {A: Type}:
@@ -1361,12 +1360,12 @@ Proof.
   assert (H_eq: le_min n (f a) = le_min n (le_min (f a) default)).
   {
     destruct (le_total (f a) default).
-    - rewrite (min_l _ _ g).
+    - rewrite (min_r _ _ l).
+      reflexivity.    
+    - rewrite (min_l _ _ l).
       rewrite (min_r _ _ H_le); auto.
       rewrite (min_r n (f a)); auto.
       eapply le_trans; eauto.
-    - rewrite (min_r _ _ g).
-      reflexivity.
   }
   rewrite H_eq.
   apply min_default_union'.
@@ -1512,6 +1511,34 @@ Proof.
     rewrite! Hg_def. 
     auto. 
   - rewrite Hg_def. auto.
+Qed.
+
+Lemma min_exists_union_l {A: Type}:
+  forall n m (f: A -> T) (P Q: A -> Prop), 
+    (exists a, P a /\ f a = n) -> 
+    min_value_of_subset (P ∪ Q) f m -> 
+    n ≥ m.
+Proof. 
+  intros. 
+  destruct H as [? []]. 
+  destruct H0 as [? [[]]]. 
+  subst. 
+  apply H2. 
+  left; auto. 
+Qed.
+
+Lemma min_exists_union_r {A: Type}:
+  forall n m (f: A -> T) (P Q: A -> Prop), 
+    (exists a, Q a /\ f a = n) -> 
+    min_value_of_subset (P ∪ Q) f m -> 
+    n ≥ m.
+Proof. 
+  intros. 
+  destruct H as [? []]. 
+  destruct H0 as [? [[]]]. 
+  subst. 
+  apply H2. 
+  right; auto. 
 Qed.
 
 End TotalOrder.
