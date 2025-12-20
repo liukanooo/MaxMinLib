@@ -35,11 +35,13 @@ End Nat.
 
 Section Nat_op.
 
+(* None is +inf *)
+
 Definition Nat_op_le: option nat -> option nat -> Prop := 
   fun x y => match x, y with
   | Some x, Some y => Nat.le x y
-  | None, _ => True
-  | _, None => False
+  | _, None => True
+  | None, _ => False
   end.
 
 Definition Nat_op_plus: option nat -> option nat -> option nat :=
@@ -88,11 +90,14 @@ End Nat_op.
 Section Z_op.
 
 Local Open Scope Z.
+
+(* None is +inf *)
+
 Definition Z_op_le: option Z -> option Z -> Prop := 
   fun x y => match x, y with
   | Some x, Some y => Z.le x y
-  | None, _ => True
-  | _, None => False
+  | _, None => True
+  | None, _ => False
   end.
 
 Definition Z_op_plus: option Z -> option Z -> option Z :=
