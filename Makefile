@@ -23,6 +23,9 @@ world: \
 
 all: world 
 
+_CoqProject:
+	@echo $(DEP_FLAG) > _CoqProject
+
 depend:
 	$(COQDEP) $(DEP_FLAG) $(FILES) > .depend
 

@@ -38,8 +38,8 @@ Section Nat_op.
 Definition Nat_op_le: option nat -> option nat -> Prop := 
   fun x y => match x, y with
   | Some x, Some y => Nat.le x y
-  | None, _ => True
-  | _, None => False
+  | _, None => True
+  | None, _ => False
   end.
 
 Definition Nat_op_plus: option nat -> option nat -> option nat :=
@@ -52,8 +52,8 @@ Definition Nat_op_plus: option nat -> option nat -> option nat :=
 Definition Nat_op_min: option nat -> option nat -> option nat :=
   fun x y => match x, y with
   | Some x, Some y => Some (min x y)
-  | None, _ => None
-  | _, None => None
+  | None, _ => y
+  | _, None => x
   end.
 
 Theorem Nat_op_le_refl: forall x, Nat_op_le x x.
@@ -91,8 +91,8 @@ Local Open Scope Z.
 Definition Z_op_le: option Z -> option Z -> Prop := 
   fun x y => match x, y with
   | Some x, Some y => Z.le x y
-  | None, _ => True
-  | _, None => False
+  | _, None => True
+  | None, _ => False
   end.
 
 Definition Z_op_plus: option Z -> option Z -> option Z :=
@@ -105,8 +105,8 @@ Definition Z_op_plus: option Z -> option Z -> option Z :=
 Definition Z_op_min: option Z -> option Z -> option Z :=
   fun x y => match x, y with
   | Some x, Some y => Some (Z.min x y)
-  | None, _ => None
-  | _, None => None
+  | None, _ => y
+  | _, None => x
   end.
 
 Theorem Z_op_le_refl: forall x, Z_op_le x x.
