@@ -118,11 +118,12 @@ Definition Nat_op_plus: option nat -> option nat -> option nat :=
   | _, None => None
   end.
 
-Definition Nat_op_min: option nat -> option nat -> option nat :=
-  fun x y => match x, y with
-  | Some x, Some y => Some (min x y)
-  | None, _ => None
-  | _, None => None
+Definition Nat_op_min (x y: option nat) : option nat :=
+  match x, y with
+  | Some xv, Some yv => Some (min xv yv)
+  | Some xv, None    => Some xv
+  | None,    Some yv => Some yv
+  | None,    None    => None
   end.
 
 Theorem Nat_op_le_refl: forall x, Nat_op_le x x.
@@ -179,9 +180,10 @@ Definition Z_op_plus: option Z -> option Z -> option Z :=
 
 Definition Z_op_min: option Z -> option Z -> option Z :=
   fun x y => match x, y with
-  | Some x, Some y => Some (Z.min x y)
-  | None, _ => None
-  | _, None => None
+  | Some xv, Some yv => Some (Z.min xv yv)
+  | Some xv, None    => Some xv
+  | None,    Some yv => Some yv
+  | None,    None    => None
   end.
 
 Theorem Z_op_le_refl: forall x, Z_op_le x x.
