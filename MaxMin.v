@@ -767,7 +767,7 @@ Definition min_object_of_subset
              (X: A -> Prop)
              (f: A -> T)
              (a: A): Prop :=
-  a ∈ X /\ forall b, b ∈ X -> f b ≥ f a.
+  a ∈ X /\ forall b, b ∈ X -> f a ≤ f b.
 
 Definition min_value_of_subset
              {A: Type}
@@ -783,7 +783,7 @@ Definition min_value_of_subset_with_default
              (default: T)
              (n: T): Prop :=
   (min_value_of_subset X f n /\ n ≤ default) \/
-  ((forall a, a ∈ X -> f a ≥ default) /\ n = default).
+  ((forall a, a ∈ X -> default ≤ f a) /\ n = default).
 
 Notation "a 'is-the-min-of' e 'in-which' x 'satisfies' P" :=
   (min_value_of_subset (fun x => P) (fun x => e) a)
@@ -801,18 +801,10 @@ Notation "a 'is-the-min-of' e 'in-which' ' pat 'satisfies' P 'with-default' defa
   (min_value_of_subset_with_default (fun xx => match xx with pat => P end) (fun xx => match xx with pat => e end) default a)
   (at level 1, pat pattern, no associativity).
 
-Notation "'the-min-of' e 'in-which' x 'satisfies' P" :=
-  (min_value_of_subset (fun x => P) (fun x => e))
-  (at level 2, no associativity).
-
-Notation "'the-min-of' e 'in-which' ' pat 'satisfies' P" :=
-  (min_value_of_subset (fun xx => match xx with pat => P end) (fun xx => match xx with pat => e end))
-  (at level 2, pat pattern, no associativity).
-
 Lemma min_object_sound {A: Type}:
   forall (f: A -> T) (P: A -> Prop) (a: A),
     min_object_of_subset P f a ->
-    (forall b: A, b ∈ P -> f b ≥ f a).
+    (forall b: A, b ∈ P -> f a ≤ f b).
 Proof. intros f P a [? ?]. tauto. Qed.
 
 Lemma min_object_legal {A: Type}:
@@ -1088,8 +1080,8 @@ Qed.
 Theorem min_object_union_left {A: Type}:
   forall a (f: A -> T) (P Q: A -> Prop) n,
     min_object_of_subset P f a ->
-    (forall b, b ∈ Q -> f b ≥ n) ->
-    n ≥ f a ->
+    (forall b, b ∈ Q -> n ≤ f b) ->
+    f a ≤ n ->
     min_object_of_subset (P ∪ Q) f a.
 Proof.
   intros.
@@ -1111,7 +1103,7 @@ Theorem min_object_union1 {A: Type}:
   forall a b (f: A -> T) (P Q: A -> Prop),
     min_object_of_subset P f a ->
     min_object_of_subset Q f b ->
-    f b ≥ f a ->
+    f a ≤ f b ->
     min_object_of_subset (P ∪ Q) f a.
 Proof.
   intros.
@@ -1122,9 +1114,9 @@ Qed.
 
 Theorem min_object_union_right {A: Type}:
   forall a (f: A -> T) (P Q: A -> Prop) n,
-    (forall b, b ∈ P -> f b ≥ n) ->
+    (forall b, b ∈ P -> n ≤ f b) ->
     min_object_of_subset Q f a ->
-    n ≥ f a ->
+    f a ≤ n ->
     min_object_of_subset (P ∪ Q) f a.
 Proof.
   intros.
@@ -1146,7 +1138,7 @@ Theorem min_object_union2 {A: Type}:
   forall a b (f: A -> T) (P Q: A -> Prop),
     min_object_of_subset P f a ->
     min_object_of_subset Q f b ->
-    f a ≥ f b ->
+    f b ≤ f a ->
     min_object_of_subset (P ∪ Q) f b.
 Proof.
   intros.
@@ -1542,6 +1534,22 @@ Proof.
 Qed.
 
 End TotalOrder.
+
+Notation "'the-max-of' e 'in-which' x 'satisfies' P" :=
+  (max_value_of_subset (fun x => P) (fun x => e))
+  (at level 2, no associativity).
+
+Notation "'the-max-of' e 'in-which' ' pat 'satisfies' P" :=
+  (max_value_of_subset (fun xx => match xx with pat => P end) (fun xx => match xx with pat => e end))
+  (at level 2, pat pattern, no associativity).
+
+Notation "'the-min-of' e 'in-which' x 'satisfies' P" :=
+  (min_value_of_subset (fun x => P) (fun x => e))
+  (at level 2, no associativity).
+
+Notation "'the-min-of' e 'in-which' ' pat 'satisfies' P" :=
+  (min_value_of_subset (fun xx => match xx with pat => P end) (fun xx => match xx with pat => e end))
+  (at level 2, pat pattern, no associativity).
 
 
 

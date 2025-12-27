@@ -2,6 +2,20 @@
 
 本库提供全序关系上的最大值和最小值定义及相关定理，是证明算法正确性（特别是最优化算法）的核心工具。
 
+## 编译
+
+1) Configure paths: set the path to to COQBIN and the sets repo in `CONFIGURE` (used by `Makefile`):
+
+    ```make
+    COQBIN = # your own path to coqc, e.g. COQBIN=../coq-8.20/bin/
+    SETS_DIR = # your own path to sets, e.g. SETS_DIR=../Sets
+    ```
+
+   If Coq is already installed into `PATH` (check `coqc --version`), you do not need to configure COQBIN.
+
+2) Generate dependencies: run `make depend`.  
+3) Build: run `make` (or `make -j` to parallelize).  
+
 ## 文件结构
 
 ```
@@ -333,7 +347,5 @@ Qed.
 
 5. **集合操作**：熟练使用`Sets_unfold`和`sets_unfold`展开集合记法
 
----
 
-*该库是CS2205图论算法验证项目的最短路的核心组件，用于最优化算法的正确性证明*
 
