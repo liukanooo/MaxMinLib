@@ -213,4 +213,38 @@ Qed.
   le_total := Z_op_le_total
 }.
 
+Lemma Z_op_plus_mono: forall x1 x2 y1 y2,
+  Z_op_le x1 x2 -> Z_op_le y1 y2 -> 
+  Z_op_le (Z_op_plus x1 y1) (Z_op_plus x2 y2).
+Proof.
+  intros. destruct x1, x2, y1, y2; simpl in *; try tauto; try lia.
+Qed.
+
+Lemma Z_op_none_le_iff: forall x, 
+  Z_op_le None x <-> x = None.
+Proof.
+  intros. split; intros.
+  - destruct x; simpl in *; try tauto.
+  - destruct x; simpl in *; try congruence; auto.
+Qed. 
+
+Lemma Z_op_le_ge_cases: forall x y, 
+  Z_op_le x y \/ Z_op_le y x. 
+Proof.
+  intros. destruct x, y; simpl in *; auto.
+  apply Z.le_ge_cases.
+Qed.
+
+Lemma Z_op_plus_O_r: forall x, 
+  (Z_op_plus x (Some 0)) = x.
+Proof.
+  intros. destruct x; simpl in *; try f_equal; try lia.
+Qed. 
+
+Lemma Z_op_plus_O_l: forall x, 
+  (Z_op_plus (Some 0) x) = x.
+Proof.
+  intros. destruct x; simpl in *; try f_equal; try lia.
+Qed. 
+
 End Z_op.
