@@ -237,14 +237,22 @@ Qed.
 
 Lemma Z_op_plus_O_r: forall x, 
   (Z_op_plus x (Some 0)) = x.
-Proof.
-  intros. destruct x; simpl in *; try f_equal; try lia.
-Qed. 
+Proof. intros. destruct x; simpl in *; try f_equal; try lia. Qed. 
 
 Lemma Z_op_plus_O_l: forall x, 
   (Z_op_plus (Some 0) x) = x.
-Proof.
-  intros. destruct x; simpl in *; try f_equal; try lia.
-Qed. 
+Proof. intros. destruct x; simpl in *; try f_equal; try lia. Qed. 
+
+Lemma Z_op_plus_none_r: forall x, 
+  (Z_op_plus x None) = None.
+Proof. destruct x; reflexivity. Qed.
+
+Lemma Z_op_min_none_r: forall x, 
+  (Z_op_min x None) = x.
+Proof. destruct x; reflexivity. Qed.
+
+Lemma Z_op_le_none_r: forall x, 
+  Z_op_le x None.
+Proof. destruct x; reflexivity. Qed.
 
 End Z_op.
