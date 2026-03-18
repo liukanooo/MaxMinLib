@@ -611,6 +611,16 @@ Proof.
   apply le_refl.
 Qed.
 
+Theorem max_empty {A: Type}:
+  forall (f: A -> T),
+    max_value_of_subset ∅ f == ∅.
+Proof.
+  intros f. 
+  split; [intros H|intros; tauto].
+  destruct H as [n [[Ha_in _] _]].
+  tauto.
+Qed.
+
 Theorem max_1' {A: Type}:
   forall a (f: A -> T),
     max_value_of_subset (Sets.singleton a) f (f a).
@@ -634,6 +644,19 @@ Proof.
   }
   rewrite H0.
   apply max_1'.
+Qed.
+
+Theorem max_singleton {A: Type}:
+  forall a (f: A -> T),
+    max_value_of_subset (Sets.singleton a) f == [(f a)].
+Proof.
+  intros. 
+  split; intros. 
+  - destruct H as [? [[]]]. 
+    sets_unfold in H; subst. 
+    reflexivity. 
+  - sets_unfold in H; rewrite <- H. 
+    apply max_1'.
 Qed.
 
 Theorem max_default_1 {A: Type}:
@@ -847,7 +870,7 @@ Proof.
   rewrite H.
   subst.
   reflexivity.
-Qed.
+Qed. 
 
 #[export] Instance min_value_of_subset_with_default_congr {A: Type}:
   Proper
@@ -1269,6 +1292,17 @@ Proof.
   apply le_refl.
 Qed.
 
+Theorem min_empty {A: Type}:
+  forall (f: A -> T),
+    min_value_of_subset ∅ f == ∅.
+Proof.
+  intros f. 
+  split; [intros H|intros; tauto].
+  destruct H as [n [[Ha_in _] _]].
+  tauto.
+Qed. 
+
+
 Theorem min_1' {A: Type}:
   forall a (f: A -> T),
     min_value_of_subset (Sets.singleton a) f (f a).
@@ -1292,6 +1326,19 @@ Proof.
   }
   rewrite H0.
   apply min_1'.
+Qed.
+
+Theorem min_singleton {A: Type}:
+  forall a (f: A -> T),
+    min_value_of_subset (Sets.singleton a) f == [(f a)].
+Proof.
+  intros. 
+  split; intros. 
+  - destruct H as [? [[]]]. 
+    sets_unfold in H; subst. 
+    reflexivity. 
+  - sets_unfold in H; rewrite <- H. 
+    apply min_1'.
 Qed.
 
 Theorem min_default_1 {A: Type}:

@@ -15,6 +15,10 @@ Section Z.
 Theorem Z_le_total: forall x y, {Z.le x y} + {Z.le y x}.
 Proof. intros. destruct (Z_le_dec x y); [left | right]; lia. Qed.
 
+
+
+End Z.
+
 #[export] Instance Zle_TotalOrder: TotalOrder Z.le := {
   le_refl := Z.le_refl;
   le_trans := Z.le_trans;
@@ -22,23 +26,12 @@ Proof. intros. destruct (Z_le_dec x y); [left | right]; lia. Qed.
   le_total := Z_le_total;
 }.
 
-End Z.
-
-
 (* MaxMin in Nat *)
 
 Section Nat.
 
 Theorem Nat_le_total: forall x y, {Nat.le x y} + {Nat.le y x}.
 Proof. intros. destruct (le_ge_dec x y); [left | right]; auto. Qed. 
-
-#[export] Instance NatLe_TotalOrder: TotalOrder Nat.le := {
-  le_refl := Nat.le_refl;
-  le_trans := Nat.le_trans;
-  le_antisym := Nat.le_antisymm;
-  le_total := Nat_le_total;
-}.
-
 
 (* 只有在nat(良序关系)上且谓词为最小值时，存在性引理才成立 *)
 
@@ -99,6 +92,13 @@ Proof.
 Qed.
 
 End Nat.
+
+#[export] Instance NatLe_TotalOrder: TotalOrder Nat.le := {
+  le_refl := Nat.le_refl;
+  le_trans := Nat.le_trans;
+  le_antisym := Nat.le_antisymm;
+  le_total := Nat_le_total;
+}.
 
 Section Nat_op.
 
@@ -251,8 +251,32 @@ Lemma Z_op_min_none_r: forall x,
   (Z_op_min x None) = x.
 Proof. destruct x; reflexivity. Qed.
 
+Lemma Z_op_min_le_l: forall x, 
+  (Z_op_min None x) = x.
+Proof. destruct x; reflexivity. Qed.
+
 Lemma Z_op_le_none_r: forall x, 
   Z_op_le x None.
 Proof. destruct x; reflexivity. Qed.
+
+Lemma Z_op_le_min_l: forall x y, 
+  Z_op_le x y -> Z_op_min x y = x.
+Proof.
+  intros. destruct x, y; simpl in *; try tauto. 
+  f_equal; lia.
+Qed.
+
+Lemma Z_op_le_min_r: forall x y, 
+  Z_op_le y x -> Z_op_min x y = y.
+Proof.
+  intros. destruct x, y; simpl in *; try tauto. 
+  f_equal; lia.
+Qed.
+
+Lemma Z_op_le_min_imply: forall x y z, 
+  Z_op_le x y -> Z_op_le x z -> Z_op_le x (Z_op_min y z). 
+Proof.
+  intros. destruct x, y, z; simpl in *; try tauto. lia.
+Qed.
 
 End Z_op.
